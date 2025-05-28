@@ -12,10 +12,10 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'markdown-factory-secret-key-2024'
     
     # 数据库配置
-    MYSQL_HOST = os.environ.get('MYSQL_HOST') or '192.168.16.105'
+    MYSQL_HOST = os.environ.get('MYSQL_HOST') or '192.168.16.20'
     MYSQL_PORT = os.environ.get('MYSQL_PORT') or '3306'
     MYSQL_USER = os.environ.get('MYSQL_USER') or 'root'
-    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or '19900114xin'
+    MYSQL_PASSWORD = os.environ.get('MYSQL_PASSWORD') or '!200808Xx'
     MYSQL_DATABASE = os.environ.get('MYSQL_DATABASE') or 'markdown_factory'
     
     SQLALCHEMY_DATABASE_URI = f'mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}?charset=utf8mb4'
