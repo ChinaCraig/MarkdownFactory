@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - Markdown Factory{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Markdown 文档管理</h1>
+            <a href="{{ url_for('create_document') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 创建新文档
+            </a>
+        </div>
+
+        <!-- 批量操作工具栏 -->
+        <div class="card mb-4" id="batch-toolbar" style="display: none;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span id="selected-count">0</span> 个文档已选择
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-success" onclick="batchDownload('md')">
+                            <i class="fas fa-download"></i> 批量下载 MD
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="batchDownload('docx')">
+                            <i class="fas fa-file-word"></i> 批量下载 Word
+                        </button>
+                        <button type="button" class="btn btn-outline-danger" onclick="batchDelete()">
+                            <i class="fas fa-trash"></i> 批量删除
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearSelection()">
+                            <i class="fas fa-times"></i> 取消选择
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if documents and documents.items %}
+            <!-- 全选控制 -->
+            <div class="card mb-3">
+                <div class="card-body py-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="select-all">
+                        <label class="form-check-label" for="select-all">
+                            全选
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文档列表 -->
+            <div class="card">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="50">选择</th>
+                                    <th>标题</th>
+                                    <th width="150">创建时间</th>
+                                    <th width="150">更新时间</th>
+                                    <th width="350">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents.items %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input class="form-check-input doc-checkbox" type="checkbox" 
+                                                   value="{{ document.id }}" id="doc-{{ document.id }}">
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <h6 class="mb-1">{{ document.title }}</h6>
+                                            <small class="text-muted">
+                                                {{ document.content[:100] }}{% if document.content|length > 100 %}...{% endif %}
+                                            </small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ document.created_at.strftime('%Y-%m-%d') }}<br>
+                                            {{ document.created_at.strftime('%H:%M') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ document.updated_at.strftime('%Y-%m-%d') }}<br>
+                                            {{ document.updated_at.strftime('%H:%M') }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{{ url_for('view_document', doc_id=document.id) }}" 
+                                               class="btn btn-outline-primary me-1" 
+                                               title="查看文档内容" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="top">
+                                                <i class="fas fa-eye"></i>
+                                                <span class="d-none d-lg-inline ms-1">查看</span>
+                                            </a>
+                                            <a href="{{ url_for('edit_document', doc_id=document.id) }}" 
+                                               class="btn btn-outline-secondary me-1" 
+                                               title="编辑文档" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="top">
+                                                <i class="fas fa-edit"></i>
+                                                <span class="d-none d-lg-inline ms-1">编辑</span>
+                                            </a>
+                                            <div class="btn-group btn-group-sm me-1" role="group">
+                                                <button type="button" class="btn btn-outline-success dropdown-toggle" 
+                                                        data-bs-toggle="dropdown" 
+                                                        title="下载文档" 
+                                                        aria-expanded="false">
+                                                    <i class="fas fa-download"></i>
+                                                    <span class="d-none d-lg-inline ms-1">下载</span>
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ url_for('download_document', doc_id=document.id) }}">
+                                                            <i class="fas fa-file-alt text-primary"></i> 下载 Markdown
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a class="dropdown-item" href="{{ url_for('download_word', doc_id=document.id) }}">
+                                                            <i class="fas fa-file-word text-info"></i> 下载 Word
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <a href="{{ url_for('delete_document', doc_id=document.id) }}" 
+                                               class="btn btn-outline-danger" 
+                                               title="删除文档（不可恢复）" 
+                                               data-bs-toggle="tooltip" 
+                                               data-bs-placement="top"
+                                               onclick="return confirm('确定要删除这个文档吗？此操作不可恢复！')">
+                                                <i class="fas fa-trash"></i>
+                                                <span class="d-none d-lg-inline ms-1">删除</span>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分页 -->
+            {% if documents.pages > 1 %}
+            <nav aria-label="文档分页" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if documents.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('index', page=documents.prev_num) }}">上一页</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for page_num in documents.iter_pages() %}
+                        {% if page_num %}
+                            {% if page_num != documents.page %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('index', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                            {% else %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if documents.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('index', page=documents.next_num) }}">下一页</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="fas fa-file-alt fa-5x text-muted"></i>
+                </div>
+                <h3 class="text-muted">还没有任何文档</h3>
+                <p class="text-muted">点击上方按钮创建您的第一个Markdown文档</p>
+                <a href="{{ url_for('create_document') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus"></i> 创建第一个文档
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始化工具提示
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    const selectAllCheckbox = document.getElementById('select-all');
+    const docCheckboxes = document.querySelectorAll('.doc-checkbox');
+    const batchToolbar = document.getElementById('batch-toolbar');
+    const selectedCountSpan = document.getElementById('selected-count');
+
+    // 全选/取消全选
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            docCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBatchToolbar();
+        });
+    }
+
+    // 单个复选框变化
+    docCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateBatchToolbar();
+        });
+    });
+
+    function updateSelectAllState() {
+        const checkedCount = document.querySelectorAll('.doc-checkbox:checked').length;
+        const totalCount = docCheckboxes.length;
+        
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = checkedCount === totalCount;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < totalCount;
+        }
+    }
+
+    function updateBatchToolbar() {
+        const checkedCount = document.querySelectorAll('.doc-checkbox:checked').length;
+        selectedCountSpan.textContent = checkedCount;
+        
+        if (checkedCount > 0) {
+            batchToolbar.style.display = 'block';
+        } else {
+            batchToolbar.style.display = 'none';
+        }
+    }
+
+    // 批量下载
+    window.batchDownload = function(fileType) {
+        const checkedBoxes = document.querySelectorAll('.doc-checkbox:checked');
+        const docIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+        
+        if (docIds.length === 0) {
+            alert('请选择要下载的文档');
+            return;
+        }
+
+        fetch('/batch_download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                doc_ids: docIds,
+                file_type: fileType
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`下载失败: ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // 创建下载链接
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // 生成文件名
+            const timestamp = new Date().toISOString().slice(0,19).replace(/:/g, '-');
+            a.download = `markdown_documents_${timestamp}.zip`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // 清理
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }, 100);
+        })
+        .catch(error => {
+            console.error('下载错误:', error);
+            // 静默处理错误，不显示alert
+        });
+    };
+
+    // 批量删除
+    window.batchDelete = function() {
+        const checkedBoxes = document.querySelectorAll('.doc-checkbox:checked');
+        const docIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+        
+        if (docIds.length === 0) {
+            alert('请选择要删除的文档');
+            return;
+        }
+
+        if (!confirm(`确定要删除选中的 ${docIds.length} 个文档吗？此操作不可恢复！`)) {
+            return;
+        }
+
+        fetch('/batch_delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                doc_ids: docIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('删除失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('删除失败: ' + error.message);
+        });
+    };
+
+    // 清除选择
+    window.clearSelection = function() {
+        docCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        if (selectAllCheckbox) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        }
+        updateBatchToolbar();
+    };
+});
+</script>
+{% endblock %} 

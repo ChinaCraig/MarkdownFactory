@@ -1,0 +1,11 @@
+Flask==2.3.3
+Flask-SQLAlchemy==3.0.5
+PyMySQL==1.1.0
+cryptography==41.0.4
+markdown==3.5.1
+Werkzeug==2.3.7
+Jinja2==3.1.2
+python-docx==0.8.11
+pypandoc==1.13
+requests==2.32.3
+Pillow==11.2.1 

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block title %}编辑文档 - {{ document.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1>编辑文档: {{ document.title }}</h1>
+        
+        <form method="POST" class="mt-4">
+            <div class="mb-3">
+                <label for="title" class="form-label">文档标题</label>
+                <input type="text" class="form-control" id="title" name="title" required 
+                       value="{{ document.title }}">
+            </div>
+            
+            <div class="mb-3">
+                <label for="content" class="form-label">Markdown内容</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <textarea class="form-control" id="content" name="content" rows="20" required>{{ document.content }}</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <small class="text-muted">实时预览</small>
+                            </div>
+                            <div class="card-body" id="preview" style="min-height: 400px; max-height: 400px; overflow-y: auto;">
+                                <!-- 预览内容将通过JavaScript填充 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存更改
+                </button>
+                <a href="{{ url_for('view_document', doc_id=document.id) }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 取消编辑
+                </a>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentTextarea = document.getElementById('content');
+    const previewDiv = document.getElementById('preview');
+    
+    function updatePreview() {
+        const markdownText = contentTextarea.value;
+        if (markdownText.trim() === '') {
+            previewDiv.innerHTML = '<p class="text-muted">在左侧输入Markdown内容，这里会显示实时预览...</p>';
+        } else {
+            previewDiv.innerHTML = marked.parse(markdownText);
+        }
+    }
+    
+    contentTextarea.addEventListener('input', updatePreview);
+    updatePreview(); // 初始化预览
+});
+</script>
+{% endblock %} 
