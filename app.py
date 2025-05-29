@@ -921,11 +921,4 @@ def inject_config():
     }
 
 if __name__ == '__main__':
-    with app.app_context():
-        try:
-            db.create_all()
-            print("✅ 数据库表创建成功")
-        except Exception as e:
-            print(f"❌ 数据库初始化失败: {e}")
-    
     app.run(debug=True, host='0.0.0.0', port=8888) 
