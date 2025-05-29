@@ -90,9 +90,22 @@ pip install -r requirements.txt
 ```
 
 4. **配置数据库**
+
+首先创建数据库：
 ```bash
-# 连接MySQL并执行
-mysql -h 192.168.16.105 -u root -p < database_setup.sql
+# 连接MySQL创建数据库
+mysql -h 192.168.16.105 -u root -p
+CREATE DATABASE markdown_factory CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+EXIT;
+```
+
+然后初始化数据库表：
+```bash
+# 方法1: 使用Python脚本初始化（推荐）
+python init_database.py
+
+# 方法2: 直接执行SQL文件
+mysql -h 192.168.16.105 -u root -p markdown_factory < database_setup.sql
 ```
 
 5. **启动应用**

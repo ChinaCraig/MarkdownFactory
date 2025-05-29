@@ -68,24 +68,23 @@ except Exception as e:
     exit(1)
 "
 
-# 创建数据库和表
-echo "🗄️  初始化数据库..."
-mysql -h 192.168.16.105 -P 3306 -u root -p19900114xin < database_setup.sql 2>/dev/null || {
-    echo "⚠️  数据库初始化可能失败，请手动执行 database_setup.sql"
-}
-
 # 设置权限
 echo "🔐 设置文件权限..."
 chmod +x run.py
 chmod +x install.sh
+chmod +x init_database.py
 
 echo "=================================="
 echo "🎉 安装完成！"
 echo ""
-echo "📝 使用方法:"
-echo "1. 启动应用: python3 run.py"
-echo "2. 或者直接: python3 app.py"
-echo "3. 访问: http://localhost:5000"
+echo "📝 下一步操作:"
+echo "1. 初始化数据库: python3 init_database.py"
+echo "2. 启动应用: python3 run.py"
+echo "3. 访问: http://localhost:8888"
+echo ""
+echo "💡 提示:"
+echo "- 如果数据库不存在，请先创建: CREATE DATABASE markdown_factory;"
+echo "- 也可以直接执行SQL文件: mysql -h 192.168.16.105 -u root -p < database_setup.sql"
 echo ""
 echo "📚 更多信息请查看 README.md"
 echo "==================================" 
